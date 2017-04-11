@@ -1,35 +1,78 @@
-import pyaudio
+import os
 import wave
+import threading
 import sys
 
-CHUNK = 1024
+# PyAudio Library
+import pyaudio
 
-forplay=("/Users/ricbecker/Music/yearning.wav")
-forplay2=("/Users/ricbecker/Music/wozzeck.wav")
+class Looper(threading.Thread) :
+  """
+  A simple class based on PyAudio to play wave loop.
+  It's a threading class. You can play audio while your application
+  continues to do its stuff. :)
+  """
 
-wf = wave.open(forplay, 'rb')
-wf2 = wave.open(forplay2, 'rb')
+  CHUNK = 1024
 
-# instantiate PyAudio (1)
-p = pyaudio.PyAudio()
 
-# open stream (2)
-stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                channels=wf.getnchannels(),
-                rate=wf.getframerate(),
-                output=True)
+  def __init__(self,filepath,loop=True) :
+    """
+    Initialize `Looper` class.
+    PARAM:
+        -- filepath (String) : File Path to wave file.
+        -- loop (boolean)    : True if you want loop playback. 
+                               False otherwise.
+    """
+    super(Looper, self).__init__()
+    self.filepath = os.path.abspath(filepath)
+    self.loop = loop
+    self.playing = True
+    self.pauser = False
 
-# read data
-data = wf.readframes(CHUNK)
+  def run(self):
+    # Open Wave File and start play!
+    wf = wave.open(self.filepath, 'rb')
+    player = pyaudio.PyAudio()
 
-# play stream (3)
-while len(data) > 0:
-    stream.write(data)
-    data = wf.readframes(CHUNK)
 
-# stop stream (4)
-stream.stop_stream()
-stream.close()
+    # Open Output Stream (basen on PyAudio tutorial)
+    stream = player.open(format = player.get_format_from_width(wf.getsampwidth()),
+        channels = wf.getnchannels(),
+        rate = wf.getframerate(),
+        output = True)
 
-# close PyAudio (5)
-p.terminate()
+    # PLAYBACK LOOP
+    data = wf.readframes(self.CHUNK)
+    while self.playing :
+      if not self.pauser:
+        stream.write(data)
+        data = wf.readframes(self.CHUNK)
+      if self.loop and not data:
+        wf.rewind()
+        data = wf.readframes(self.CHUNK)
+
+    stream.close()
+    player.terminate()
+
+
+  def play(self) :
+    """
+    Just another name for self.start()
+    """
+    self.pauser = False
+    self.loop = True
+
+  def pause(self) :
+    if not self.pauser :
+      self.pauser = True
+    else:
+      self.pauser = False
+
+
+  def stop(self) :
+
+    self.loop = False
+
+  def terminate(self) :
+    self.playing=False
