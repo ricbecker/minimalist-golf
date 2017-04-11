@@ -4,4 +4,9 @@ There should be two main parts of this project: the audio engine and the battery
 
 Required installations for this project:
 
-pyaudio
+Install pyaudio with command
+sudo apt-get install python-pyaudio python3-pyaudio
+
+if python.h not found, run:
+sudo apt-get install python-dev python3-dev
+
