@@ -27,7 +27,7 @@ class Looper(threading.Thread) :
     super(Looper, self).__init__()
     self.filepath = os.path.abspath(filepath)
     self.loop = loop
-    self.playing = True
+    self.playing = False
     self.pauser = False
 
   def run(self):
@@ -44,8 +44,8 @@ class Looper(threading.Thread) :
 
     # PLAYBACK LOOP
     data = wf.readframes(self.CHUNK)
-    while self.playing :
-      if not self.pauser:
+    while True :
+      if self.playing:
         stream.write(data)
         data = wf.readframes(self.CHUNK)
       if self.loop and not data:
@@ -60,19 +60,20 @@ class Looper(threading.Thread) :
     """
     Just another name for self.start()
     """
-    self.pauser = False
+    self.playing = True
     self.loop = True
 
   def pause(self) :
-    if not self.pauser :
-      self.pauser = True
+    if self.playing:
+        self.playing=False
     else:
-      self.pauser = False
+        self.playing=True
 
 
   def stop(self) :
 
-    self.loop = False
+    self.playing = False
 
   def terminate(self) :
-    self.playing=False
+    self.loop=False
+
