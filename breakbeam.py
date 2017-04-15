@@ -3,7 +3,7 @@ import time
 import threading
 
 class Detect(threading.Thread):
-    def __init__(self,PIR_PIN)
+    def __init__(self,PIR_PIN):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(PIR_PIN,GPIO.IN)
 
