@@ -14,3 +14,5 @@ sudo apt-get install python-dev python3-dev
 The software will be divided into to two parts, the loop module and the signal module, with engine as the initialization / main control script.  currently engine initializes the playlist and readies for track[x].play(), pause(), and stop() commands.  the signal module will monitor sensor input and trigger the engine to play tracks; a timeout should call stopall() to end the session.
 
 
+Helpful links:
+http://www.voltaicsystems.com/blog/powering-a-raspberry-pi-from-solar-power/
