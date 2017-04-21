@@ -2,6 +2,7 @@ import os
 import wave
 import threading
 import sys
+import time
 
 # PyAudio Library
 import pyaudio
@@ -24,13 +25,17 @@ class Looper(threading.Thread) :
         -- loop (boolean)    : True if you want loop playback. 
                                False otherwise.
     """
+    print("intialize class")
     super(Looper, self).__init__()
+    time.sleep(1)
+    print("set filepath")
     self.filepath = os.path.abspath(filepath)
     self.loop = loop
     self.playing = False
     self.pauser = False
 
   def run(self):
+    print("running run function")
     # Open Wave File and start play!
     wf = wave.open(self.filepath, 'rb')
     player = pyaudio.PyAudio()
@@ -44,7 +49,7 @@ class Looper(threading.Thread) :
 
     # PLAYBACK LOOP
     data = wf.readframes(self.CHUNK)
-    while True :
+    while self.loop :
       if self.playing:
         stream.write(data)
         data = wf.readframes(self.CHUNK)
