@@ -18,18 +18,25 @@ def playall():
         
 def detected(channel):
 #    print("Pin ",channel," triggered")
-    tracknum=setup.senslist.index(channel)
+#    tracknum=setup.senslist.index(channel)
 #    print("Sensor",tracknum," active")
-#    print("Playcount is ", setup.playcounter)
-    setup.track[setup.playcounter].play()
+    print("Playcount is ", setup.playcounter)
+
     if setup.playcounter==0:
         timer=threading.Timer(20,timeout)
         timer.start()
-#        print("game started")
+    elif setup.playcounter>=setup.numtracks:
+        playcounter=0    
     else:
          pass
-#        print("playcount incremented")
+
+    if not setup.track[setup.playcounter].playing():
+        setup.track[setup.playcounter].play()
+    else:
+        setup.track[setup.playcounter].pause()
+    
     setup.playcounter +=1
+
 
 def timeout():
     print("play has timed out")
@@ -41,6 +48,7 @@ def setup():
     playlist=["first.wav","second.wav","third.wav","fourth.wav"]
     setup.track=[]
     setup.playcounter=0
+    setup.numtracks=0
 
     print("setup playlist")
 
@@ -48,6 +56,7 @@ def setup():
         setup.track.append('')
         setup.track[x]=loop.Looper(playlist[x])
         setup.track[x].start()
+        setup.numtracks+=1
     print("playlist initialized")
     print("set up pinmode")
     pinnum=0
