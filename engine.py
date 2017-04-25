@@ -1,9 +1,7 @@
 import loop
-#import breakbeam
 import RPi.GPIO as GPIO
 import time
 import threading
-
 
 
 def stopall():
@@ -19,17 +17,24 @@ def playall():
         setup.track[x].play()
         
 def detected(channel):
-    print("Pin ",channel," triggered")
+#    print("Pin ",channel," triggered")
     tracknum=setup.senslist.index(channel)
-    print("Sensor",tracknum," active")
-    print("Playcount is ", setup.playcounter)
+#    print("Sensor",tracknum," active")
+#    print("Playcount is ", setup.playcounter)
     setup.track[setup.playcounter].play()
-    setup.playcounter +=1
-    if setup.playcounter > 3:
-        setup.playcounter=0
-        print("playcount reset")
+    if setup.playcounter==0:
+        timer=threading.Timer(20,timeout)
+        timer.start()
+#        print("game started")
     else:
-        print("playcount incremented")
+         pass
+#        print("playcount incremented")
+    setup.playcounter +=1
+
+def timeout():
+    print("play has timed out")
+    setup.playcounter=0
+    stopall()
 
 
 def setup():
@@ -59,7 +64,7 @@ def setup():
     for x in range(len(setup.senslist)):
         pinnum=setup.senslist[x]
         GPIO.setup(pinnum,GPIO.IN)
-        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=10000)
+        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=1500)
         print("sensor ",pinnum," initalized")
 
     try:

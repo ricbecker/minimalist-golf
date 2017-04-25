@@ -39,6 +39,11 @@ class Looper(threading.Thread) :
     # Open Wave File and start play!
     wf = wave.open(self.filepath, 'rb')
     player = pyaudio.PyAudio()
+    frames = wf.getnframes()
+    print(frames)
+    print(" total frames")
+    CHUNK=frames
+    print("chunked up")
 
 
     # Open Output Stream (basen on PyAudio tutorial)
