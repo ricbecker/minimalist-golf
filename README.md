@@ -16,3 +16,5 @@ The software will be divided into to two parts, the loop module and the signal m
 
 Helpful links:
 http://www.voltaicsystems.com/blog/powering-a-raspberry-pi-from-solar-power/
+https://www.buildxyz.xyz/raspberry-pi-shutdown-via-arduino/
+http://raspberry.io/projects/view/reading-and-writing-from-gpio-ports-from-python/
