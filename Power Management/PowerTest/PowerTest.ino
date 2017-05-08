@@ -18,7 +18,8 @@ void powerOffPi();
 RTC_DS3231 rtc;
 int sleepIterations = 0;
 volatile bool watchdogActivated = false;
-int test_LED = 13; 
+int test_LED = 13;
+int shutdown_GPIO = 12; 
 bool piOn = false;
 
 // Setup Functions
@@ -59,6 +60,7 @@ void setupWatchdog(){
 void setup() {
   Serial.begin(9600);
   pinMode(test_LED, OUTPUT);
+  pinMode(shutdown_GPIO, OUTPUT);
   delay(1000);
 
   setupRTC();
@@ -145,11 +147,13 @@ void sleep()
 // Raspberry Pi Commands
 void powerOnPi(){
   piOn = true;
+  digitalWrite(shutdown_GPIO, LOW);
   Serial.println("Powering On Raspberry Pi");
 }
 
 void powerOffPi(){
   piOn = false;
+  digitalWrite(shutdown_GPIO, HIGH);
   Serial.println("Powering Off Raspberry Pi");
 }
 
