@@ -37,30 +37,26 @@ class Looper(threading.Thread) :
   def run(self):
     print("running run function")
     # Open Wave File and start play!
-    wf = wave.open(self.filepath, 'rb')
+    self.wf = wave.open(self.filepath, 'rb')
     player = pyaudio.PyAudio()
-    frames = wf.getnframes()
-    print(frames)
-    print(" total frames")
-    CHUNK=frames
-    print("chunked up")
+
 
 
     # Open Output Stream (basen on PyAudio tutorial)
-    stream = player.open(format = player.get_format_from_width(wf.getsampwidth()),
-        channels = wf.getnchannels(),
-        rate = wf.getframerate(),
+    stream = player.open(format = player.get_format_from_width(self.wf.getsampwidth()),
+        channels = self.wf.getnchannels(),
+        rate = self.wf.getframerate(),
         output = True)
 
     # PLAYBACK LOOP
-    data = wf.readframes(self.CHUNK)
+    data = self.wf.readframes(self.CHUNK)
     while self.loop :
       if self.playing:
         stream.write(data)
-        data = wf.readframes(self.CHUNK)
+        data = self.wf.readframes(self.CHUNK)
       if self.loop and not data:
-        wf.rewind()
-        data = wf.readframes(self.CHUNK)
+        self.wf.rewind()
+        data = self.wf.readframes(self.CHUNK)
 
     stream.close()
     player.terminate()
@@ -86,4 +82,7 @@ class Looper(threading.Thread) :
 
   def terminate(self) :
     self.loop=False
+
+  def replace(self,filename):
+    self.wf = wave.open(filename, 'rb')
 
