@@ -14,7 +14,7 @@ class Looper(threading.Thread) :
   continues to do its stuff. :)
   """
 
-  CHUNK = 1024
+  CHUNK = 32000
 
 
   def __init__(self,filepath,loop=True) :
@@ -25,7 +25,7 @@ class Looper(threading.Thread) :
         -- loop (boolean)    : True if you want loop playback. 
                                False otherwise.
     """
-    print("intialize class")
+    print("intialize class, sleep 1 second")
     super(Looper, self).__init__()
     time.sleep(1)
     print("set filepath")
@@ -35,11 +35,13 @@ class Looper(threading.Thread) :
     self.pauser = False
 
   def run(self):
-    print("running run function")
+    print("running thread sleep .5s")
     # Open Wave File and start play!
     self.wf = wave.open(self.filepath, 'rb')
+    self.numframes = self.wf.getnframes()
+    CHUNK=self.numframes
+    print(CHUNK)
     player = pyaudio.PyAudio()
-
 
 
     # Open Output Stream (basen on PyAudio tutorial)
@@ -47,6 +49,8 @@ class Looper(threading.Thread) :
         channels = self.wf.getnchannels(),
         rate = self.wf.getframerate(),
         output = True)
+    print("intializing audio track sleep 1s")
+    time.sleep(.5)
 
     # PLAYBACK LOOP
     data = self.wf.readframes(self.CHUNK)
@@ -57,7 +61,7 @@ class Looper(threading.Thread) :
       if self.loop and not data:
         self.wf.rewind()
         data = self.wf.readframes(self.CHUNK)
-
+      time.sleep(.01)
     stream.close()
     player.terminate()
 

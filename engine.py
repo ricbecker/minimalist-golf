@@ -21,15 +21,18 @@ def playall():
         
 def detected(ballsack):
     print("sensor active")
+    try:
+        detected.clock.cancel()
+    except:
+        pass
+    detected.clock=threading.Timer(30,timeout)
+    detected.clock.start()
     if setup.playcounter==len(channel):
         setup.playcounter=0
         setup.roundcounter+=1;
 
     if setup.roundcounter==len(channel[0]):
         setup.roundcounter=0
-    
-    print("channel",setup.playcounter)
-    print("round",setup.roundcounter)
 
     if not setup.track[setup.playcounter].playing:
         setup.track[setup.playcounter].play()
@@ -56,8 +59,6 @@ def setup():
     setup.roundcounter=0
     setup.numtracks=0
 
-    print("setup playlist")
-
     for x in range(len(channel)):
         setup.track.append('')
         setup.track[x]=loop.Looper(channel[x][0])
@@ -65,27 +66,25 @@ def setup():
         setup.numtracks+=1
 
     print("playlist initialized")
-    print("set up pinmode")
     pinnum=0
     print(pinnum)
     GPIO.setmode(GPIO.BOARD)
-    setup.senslist=[11,12,35]
+    setup.senslist=[33]
     print(setup.senslist)
     print("pinmode established")
-
-    print("set up pins")
 
     sensor=[]
 
     for x in range(len(setup.senslist)):
         pinnum=setup.senslist[x]
-        GPIO.setup(pinnum,GPIO.IN)
+        GPIO.setup(pinnum,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=1500)
         print("sensor ",pinnum," initalized")
 
     try:
         while True:
             pass
+            time.sleep(.1)
     except KeyboardInterrupt:
         terminate()
         time.sleep(2)
