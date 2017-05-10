@@ -20,12 +20,7 @@ def playall():
         setup.track[x].play()
         
 def detected(ballsack):
-    print("Pin ",ballsack," triggered")
-    tracknum=setup.senslist.index(channel)
-    print("Sensor",tracknum," active")
-    if setup.playcounter==0:
-        timer=threading.Timer(20,timeout)
-        timer.start()
+    print("sensor active")
     if setup.playcounter==len(channel):
         setup.playcounter=0
         setup.roundcounter+=1;
@@ -69,7 +64,7 @@ def setup():
         setup.track[x].start()
         setup.numtracks+=1
 
- aseprint("playlist initialized")
+    print("playlist initialized")
     print("set up pinmode")
     pinnum=0
     print(pinnum)
@@ -94,7 +89,7 @@ def setup():
     except KeyboardInterrupt:
         terminate()
         time.sleep(2)
-chan        print ("Quit")
+        print ("Quit")
         GPIO.cleanup()
 
         
