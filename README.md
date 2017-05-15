@@ -1,6 +1,5 @@
 This is the GitHub repository for Night Multimedia Art’s “MINIMalist Golf” project.
-
-There should be two main parts of this project: the audio engine and the battery / power control.
+______________
 
 Required installations for this project:
 
@@ -9,10 +8,23 @@ sudo apt-get install python-pyaudio python3-pyaudio
 
 if python.h not found, run:
 sudo apt-get install python-dev python3-dev
+_______________
+
+There are two programs running on the Pi: the main engine (includes the Loop module, a separate file) and the power control (a simple background process that reads for GPIO signals to shutdown the pi). There is additional software installed on an arduino to read the battery state and a clock and send signals to the Pi to shutdown.
+_______________
+
+Method for running a script on Pi startup:
+
+-from terminal, open crontab with command 
+        crontab -e
+-At bottom of crontab file, insert command:
+        @reboot python <full file path of python file> &
+-save and exit. voila!
+
+NB: "&" is essential for a script which contains an infinite loop so that the computer continues booting after loading.
 
 
-The software will be divided into to two parts, the loop module and the signal module, with engine as the initialization / main control script.  currently engine initializes the playlist and readies for track[x].play(), pause(), and stop() commands.  the signal module will monitor sensor input and trigger the engine to play tracks; a timeout should call stopall() to end the session.
-
+____________________________
 
 Helpful links:
 http://www.voltaicsystems.com/blog/powering-a-raspberry-pi-from-solar-power/
