@@ -10,6 +10,7 @@ channel=[1,2,3,4]
 def stopall():
     for x in range(4):
         setup.track[x].stop()
+
 def terminate():
     for x in range(len(setup.track)):
         setup.track[x].terminate()
@@ -47,23 +48,28 @@ def timeout():
     setup.playcounter=0
     setup.roundcounter=0
     stopall()
+    time.sleep(.2)
+    trackset()
 
-
-def setup():
-    channel[0]=["one.wav","five.wav"]
-    channel[1]=["two.wav","six.wav"]
-    channel[2]=["three.wav","seven.wav"]
-    channel[3]=["four.wav","eight.wav"]
-    setup.track=[]
-    setup.playcounter=0
-    setup.roundcounter=0
-    setup.numtracks=0
-
+def trackset():
     for x in range(len(channel)):
         setup.track.append('')
         setup.track[x]=loop.Looper(channel[x][0])
         setup.track[x].start()
         setup.numtracks+=1
+
+
+def setup():
+    channel[0]=["/home/pi/minimalist-golf/one.wav","/home/pi/minimalist-golf/five.wav"]
+    channel[1]=["/home/pi/minimalist-golf/two.wav","/home/pi/minimalist-golf/six.wav"]
+    channel[2]=["/home/pi/minimalist-golf/three.wav","/home/pi/minimalist-golf/seven.wav"]
+    channel[3]=["/home/pi/minimalist-golf/four.wav","/home/pi/minimalist-golf/eight.wav"]
+    setup.track=[]
+    setup.playcounter=0
+    setup.roundcounter=0
+    setup.numtracks=0
+
+    trackset()
 
     print("playlist initialized")
     pinnum=0
@@ -78,7 +84,7 @@ def setup():
     for x in range(len(setup.senslist)):
         pinnum=setup.senslist[x]
         GPIO.setup(pinnum,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=1500)
+        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=500)
         print("sensor ",pinnum," initalized")
 
     try:
@@ -87,7 +93,7 @@ def setup():
             time.sleep(.1)
     except KeyboardInterrupt:
         terminate()
-        time.sleep(2)
+        time.sleep(1)
         print ("Quit")
         GPIO.cleanup()
 

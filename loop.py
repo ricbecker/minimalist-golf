@@ -14,7 +14,7 @@ class Looper(threading.Thread) :
   continues to do its stuff. :)
   """
 
-  CHUNK = 32000
+  CHUNK = 1024
 
 
   def __init__(self,filepath,loop=True) :
@@ -39,8 +39,8 @@ class Looper(threading.Thread) :
     # Open Wave File and start play!
     self.wf = wave.open(self.filepath, 'rb')
     self.numframes = self.wf.getnframes()
-    CHUNK=self.numframes
-    print(CHUNK)
+#    CHUNK=self.numframes
+#    print(CHUNK)
     player = pyaudio.PyAudio()
 
 
