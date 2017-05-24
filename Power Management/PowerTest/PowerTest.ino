@@ -5,6 +5,7 @@
 
 #define MAX_SLEEP_ITERATIONS   1
 #define MIN_POWER 800
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 // Function declarations
 void printTime(DateTime now);
@@ -20,8 +21,7 @@ int sleepIterations = 0;
 volatile bool watchdogActivated = false;
 int test_LED = 13;
 int pi_GPIO = 12;
-int relay_GPIO = 10; 
- 
+int relay_GPIO = 10;
 bool systemOn = false;
 
 // Setup Functions
@@ -35,6 +35,8 @@ void setupRTC(){
     Serial.println("RTC lost power, lets set the time!");
     // Set the RTC to the date & time this sketch was compiled
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    DateTime now = rtc.now();
+    printTime(now);
     delay(1000);
   }
 }
@@ -87,7 +89,6 @@ void loop() {
       bool activeTime = checkTime(now);
 
       // Verify Power and Time
-      // TODO: Check time range
       if(power > MIN_POWER && !systemOn && activeTime) {
         powerOnPi();
       } else if ((power < MIN_POWER || !activeTime) && systemOn){
@@ -111,8 +112,6 @@ void printPower(int power){
 
 // Returns true if system should be on
 bool checkTime(DateTime now){
-
-  return true;
   // 10am - 5pm Monday - Friday
   // 10am - 6pm Satuday - Sunday
   byte day = now.dayOfTheWeek();
@@ -120,7 +119,7 @@ bool checkTime(DateTime now){
   byte minute = now.minute();
   
   if(day > 0 && day < 6){ // Weekday
-    if(hour >= 10 && hour < 6){
+    if(hour >= 10 && hour < 18){
       return true;
     } 
     else {
@@ -128,7 +127,7 @@ bool checkTime(DateTime now){
     }
   } 
   else { // Weekend
-    if(hour >= 10 && hour < 7){
+    if(hour >= 10 && hour < 19){
       return true;
     } 
     else {
@@ -138,7 +137,9 @@ bool checkTime(DateTime now){
 }
 
 void printTime(DateTime now){
-  Serial.print('Current Time: ');
+  Serial.print("Current Time: ");
+  Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+  Serial.print(" ");
   Serial.print(now.year(), DEC);
   Serial.print('/');
   Serial.print(now.month(), DEC);
@@ -182,11 +183,12 @@ void powerOnPi(){
 }
 
 void powerOffPi(){
-  systemOn = false;
   digitalWrite(pi_GPIO, HIGH);
   Serial.println("Powering Off Raspberry Pi");
   delay(20000);
+  digitalWrite(pi_GPIO, LOW);
   digitalWrite(relay_GPIO, LOW); // TODO: Is there a better way to test if Pi is active?
+  systemOn = false;
 }
 
 // TODO: Communicate with pi to check if is on
