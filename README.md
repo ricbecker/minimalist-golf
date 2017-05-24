@@ -22,7 +22,7 @@ Method for running a script on Pi startup:
 - from terminal, open crontab with command 
         crontab -e
 - At bottom of crontab file, insert command:
-        @reboot python <full file path of python file> &
+        @reboot python \<full file path of python file\> &
 - save and exit. voila!
 
 NB: "&" is essential for a script which contains an infinite loop so that the computer continues booting after loading.
@@ -39,6 +39,6 @@ NB: "&" is essential for a script which contains an infinite loop so that the co
 * * *
 
 ### Helpful links:
-http://www.voltaicsystems.com/blog/powering-a-raspberry-pi-from-solar-power/
-https://www.buildxyz.xyz/raspberry-pi-shutdown-via-arduino/
-http://raspberry.io/projects/view/reading-and-writing-from-gpio-ports-from-python/
+- http://www.voltaicsystems.com/blog/powering-a-raspberry-pi-from-solar-power/
+- https://www.buildxyz.xyz/raspberry-pi-shutdown-via-arduino/
+- http://raspberry.io/projects/view/reading-and-writing-from-gpio-ports-from-python/
