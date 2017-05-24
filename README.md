@@ -23,6 +23,14 @@ Method for running a script on Pi startup:
 
 NB: "&" is essential for a script which contains an infinite loop so that the computer continues booting after loading.
 
+____________________________
+
+PINS:
+- ARDUINO
+        - digital pin 10 - output - shutdown signal to raspberry pi
+        - digital pin 12 - output - signal to power relay
+- RASPBERRY PI
+        - digital pin 19 - input - shutdown signal from arduino
 
 ____________________________
 
