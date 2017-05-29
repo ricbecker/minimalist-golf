@@ -26,7 +26,7 @@ def detected(ballsack):
         detected.clock.cancel()
     except:
         pass
-    detected.clock=threading.Timer(30,timeout)
+    detected.clock=threading.Timer(20,timeout)
     detected.clock.start()
     if setup.playcounter==len(channel):
         setup.playcounter=0
@@ -45,25 +45,43 @@ def detected(ballsack):
 
 def timeout():
     print("play has timed out")
+    pincancel()
     setup.playcounter=0
-    setup.roundcounter=0
+#    setup.roundcounter=0
     stopall()
     time.sleep(.2)
     trackset()
+    pinset()
 
 def trackset():
     for x in range(len(channel)):
         setup.track.append('')
-        setup.track[x]=loop.Looper(channel[x][0])
+        setup.track[x]=loop.Looper(channel[x][setup.roundcounter])
         setup.track[x].start()
         setup.numtracks+=1
 
+def pincancel():
+
+    for x in range(len(setup.senslist)):
+        pinnum=setup.senslist[x]
+        GPIO.remove_event_detect(pinnum)
+        print("sensor ",pinnum," cancelled")
+
+
+def pinset():
+
+    for x in range(len(setup.senslist)):
+        pinnum=setup.senslist[x]
+        GPIO.setup(pinnum,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=500)
+        print("sensor ",pinnum," initalized")
+
 
 def setup():
-    channel[0]=["/home/pi/minimalist-golf/one.wav","/home/pi/minimalist-golf/five.wav"]
-    channel[1]=["/home/pi/minimalist-golf/two.wav","/home/pi/minimalist-golf/six.wav"]
-    channel[2]=["/home/pi/minimalist-golf/three.wav","/home/pi/minimalist-golf/seven.wav"]
-    channel[3]=["/home/pi/minimalist-golf/four.wav","/home/pi/minimalist-golf/eight.wav"]
+    channel[0]=["/home/pi/minimalist-golf/one.wav","/home/pi/minimalist-golf/five.wav","/home/pi/minimalist-golf/nine.wav"]
+    channel[1]=["/home/pi/minimalist-golf/two.wav","/home/pi/minimalist-golf/six.wav","/home/pi/minimalist-golf/ten.wav"]
+    channel[2]=["/home/pi/minimalist-golf/three.wav","/home/pi/minimalist-golf/seven.wav","/home/pi/minimalist-golf/eleven.wav"]
+    channel[3]=["/home/pi/minimalist-golf/four.wav","/home/pi/minimalist-golf/eight.wav","/home/pi/minimalist-golf/twelve.wav"]
     setup.track=[]
     setup.playcounter=0
     setup.roundcounter=0
@@ -72,25 +90,19 @@ def setup():
     trackset()
 
     print("playlist initialized")
-    pinnum=0
-    print(pinnum)
     GPIO.setmode(GPIO.BOARD)
-    setup.senslist=[33]
+    setup.senslist=[29,31,33,35]
     print(setup.senslist)
     print("pinmode established")
 
     sensor=[]
 
-    for x in range(len(setup.senslist)):
-        pinnum=setup.senslist[x]
-        GPIO.setup(pinnum,GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=500)
-        print("sensor ",pinnum," initalized")
+    pinset()
 
     try:
         while True:
             pass
-            time.sleep(.1)
+            time.sleep(.5)
     except KeyboardInterrupt:
         terminate()
         time.sleep(1)
