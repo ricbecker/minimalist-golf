@@ -5,6 +5,7 @@
 
 #define MAX_SLEEP_ITERATIONS   1
 #define MIN_POWER 800
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 // Function declarations
 void printTime(DateTime now);
@@ -19,8 +20,9 @@ RTC_DS3231 rtc;
 int sleepIterations = 0;
 volatile bool watchdogActivated = false;
 int test_LED = 13;
-int shutdown_GPIO = 12; 
-bool piOn = false;
+int pi_GPIO = 12;
+int relay_GPIO = 10;
+bool systemOn = false;
 
 // Setup Functions
 void setupRTC(){
@@ -33,6 +35,8 @@ void setupRTC(){
     Serial.println("RTC lost power, lets set the time!");
     // Set the RTC to the date & time this sketch was compiled
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    DateTime now = rtc.now();
+    printTime(now);
     delay(1000);
   }
 }
@@ -60,7 +64,8 @@ void setupWatchdog(){
 void setup() {
   Serial.begin(9600);
   pinMode(test_LED, OUTPUT);
-  pinMode(shutdown_GPIO, OUTPUT);
+  pinMode(pi_GPIO, OUTPUT);
+  pinMode(relay_GPIO, OUTPUT);
   delay(1000);
 
   setupRTC();
@@ -68,14 +73,7 @@ void setup() {
 }
 
 void loop() {
-  if(watchdogActivated){
-    // Display active
-    for (int x = 0; x < 3; x++){
-      digitalWrite(test_LED, HIGH);    
-      delay(100);
-      digitalWrite(test_LED, LOW);
-      delay(100);
-    }
+  if(watchdogActivated || systemOn){
     
     watchdogActivated = false;
     sleepIterations += 1;
@@ -87,20 +85,24 @@ void loop() {
     
       // Read RTC
       DateTime now = rtc.now();
-      printTime(now); 
+      printTime(now);
+      bool activeTime = checkTime(now);
 
       // Verify Power and Time
-      // TODO: Check time range
-      if(power > MIN_POWER && !piIsActive()) {
+      if(power > MIN_POWER && !systemOn && activeTime) {
         powerOnPi();
-      } else if (power < MIN_POWER && piIsActive()){
+      } else if ((power < MIN_POWER || !activeTime) && systemOn){
         powerOffPi();
       }
       delay(3000);
     }
   }
-  digitalWrite(test_LED, LOW);
-  sleep();
+  
+  if(systemOn) {
+    delay(3000);
+  } else {
+    sleep();
+  }
 }
 
 void printPower(int power){
@@ -108,8 +110,36 @@ void printPower(int power){
   Serial.println(power);
 }
 
+// Returns true if system should be on
+bool checkTime(DateTime now){
+  // 10am - 5pm Monday - Friday
+  // 10am - 6pm Satuday - Sunday
+  byte day = now.dayOfTheWeek();
+  byte hour = now.hour();
+  byte minute = now.minute();
+  
+  if(day > 0 && day < 6){ // Weekday
+    if(hour >= 10 && hour < 18){
+      return true;
+    } 
+    else {
+      return false;
+    }
+  } 
+  else { // Weekend
+    if(hour >= 10 && hour < 19){
+      return true;
+    } 
+    else {
+      return false;
+    }
+  }
+}
+
 void printTime(DateTime now){
-  Serial.print('Current Time: ');
+  Serial.print("Current Time: ");
+  Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+  Serial.print(" ");
   Serial.print(now.year(), DEC);
   Serial.print('/');
   Serial.print(now.month(), DEC);
@@ -146,20 +176,24 @@ void sleep()
 
 // Raspberry Pi Commands
 void powerOnPi(){
-  piOn = true;
-  digitalWrite(shutdown_GPIO, LOW);
+  systemOn = true;
+  digitalWrite(pi_GPIO, LOW);
+  digitalWrite(relay_GPIO, HIGH);
   Serial.println("Powering On Raspberry Pi");
 }
 
 void powerOffPi(){
-  piOn = false;
-  digitalWrite(shutdown_GPIO, HIGH);
+  digitalWrite(pi_GPIO, HIGH);
   Serial.println("Powering Off Raspberry Pi");
+  delay(20000);
+  digitalWrite(pi_GPIO, LOW);
+  digitalWrite(relay_GPIO, LOW); // TODO: Is there a better way to test if Pi is active?
+  systemOn = false;
 }
 
 // TODO: Communicate with pi to check if is on
 bool piIsActive(){
-  return piOn;
+  return systemOn;
 }
 
 
