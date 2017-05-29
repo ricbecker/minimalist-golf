@@ -1,3 +1,4 @@
+import os
 import loop
 import RPi.GPIO as GPIO
 import time
@@ -8,13 +9,18 @@ channel=[1,2,3,4]
 
 
 def stopall():
-    for x in range(4):
-        setup.track[x].stop()
-
-def terminate():
+    print(len(setup.track))
     for x in range(len(setup.track)):
         setup.track[x].terminate()
 
+def terminate():
+    print("terminating")
+    for x in range(len(setup.track)):
+        try:
+            setup.track[x].terminate()
+            print("terminated",setup.track[x])
+        except:
+            pass 
             
 def playall():
     for x in range(len(setup.track)):
@@ -26,7 +32,7 @@ def detected(ballsack):
         detected.clock.cancel()
     except:
         pass
-    detected.clock=threading.Timer(20,timeout)
+    detected.clock=threading.Timer(30,timeout)
     detected.clock.start()
     if setup.playcounter==len(channel):
         setup.playcounter=0
@@ -35,25 +41,28 @@ def detected(ballsack):
     if setup.roundcounter==len(channel[0]):
         setup.roundcounter=0
 
+    current=setup.track[setup.playcounter]
+    print(current)
+    filename=channel[setup.playcounter][setup.roundcounter]
+    print(filename)
+   
     if not setup.track[setup.playcounter].playing:
-        setup.track[setup.playcounter].play()
+        current.replace(filename)
+        current.play()
     else:
-        filename=channel[setup.playcounter][setup.roundcounter]
-        print(filename)
-        setup.track[setup.playcounter].replace(filename)
+        current.replace(filename)
+    
     setup.playcounter +=1
 
 def timeout():
     print("play has timed out")
     pincancel()
-    setup.playcounter=0
-#    setup.roundcounter=0
     stopall()
-    time.sleep(.2)
     trackset()
     pinset()
-
+    print(threading.activeCount(),"alive")
 def trackset():
+    setup.track=[]
     for x in range(len(channel)):
         setup.track.append('')
         setup.track[x]=loop.Looper(channel[x][setup.roundcounter])
@@ -108,7 +117,7 @@ def setup():
         time.sleep(1)
         print ("Quit")
         GPIO.cleanup()
-
+        os._exit(0)
         
 
 

@@ -14,7 +14,7 @@ class Looper(threading.Thread) :
   continues to do its stuff. :)
   """
 
-  CHUNK = 10000
+  CHUNK = 1024
 
 
   def __init__(self,filepath,loop=True) :
@@ -22,17 +22,16 @@ class Looper(threading.Thread) :
     Initialize `Looper` class.
     PARAM:
         -- filepath (String) : File Path to wave file.
-        -- loop (boolean)    : True if you want loop playback. 
+        -- loop (booleanpy)    : True if you want loop playback. 
                                False otherwise.
     """
-    print("intialize class, sleep 1 second")
+    print("intialize class, sleep .1 second")
     super(Looper, self).__init__()
     time.sleep(.1)
     print("set filepath")
     self.filepath = os.path.abspath(filepath)
-    self.loop = loop
+    self.loop = True
     self.playing = False
-    self.pauser = False
 
   def run(self):
     # Open Wave File and start play!
@@ -52,15 +51,15 @@ class Looper(threading.Thread) :
     time.sleep(.1)
 
     # PLAYBACK LOOP
-    data = self.wf.readframes(self.CHUNK)
+    self.data = self.wf.readframes(self.CHUNK)
     while self.loop :
       if self.playing:
-        stream.write(data)
-        data = self.wf.readframes(self.CHUNK)
-      if self.loop and not data:
+        stream.write(self.data)
+        self.data = self.wf.readframes(self.CHUNK)
+      if self.loop and not self.data:
         self.wf.rewind()
-        data = self.wf.readframes(self.CHUNK)
-      time.sleep(.01)
+        self.data = self.wf.readframes(self.CHUNK)
+      time.sleep(.001)
     stream.close()
     player.terminate()
 
@@ -80,7 +79,6 @@ class Looper(threading.Thread) :
 
 
   def stop(self) :
-
     self.playing = False
 
   def terminate(self) :
