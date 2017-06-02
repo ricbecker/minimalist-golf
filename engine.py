@@ -27,7 +27,7 @@ def playall():
         setup.track[x].play()
         
 def detected(ballsack):
-    print("sensor active")
+    print("sensor",ballsack," active")
     try:
         detected.clock.cancel()
     except:
@@ -82,7 +82,7 @@ def pinset():
     for x in range(len(setup.senslist)):
         pinnum=setup.senslist[x]
         GPIO.setup(pinnum,GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=500)
+#        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=500)
         print("sensor ",pinnum," initalized")
 
 
@@ -107,11 +107,38 @@ def setup():
     sensor=[]
 
     pinset()
-
+    count29=0
+    count31=0
+    count33=0
+    count35=0
     try:
         while True:
+            if(GPIO.input(29)==0 and count29==0):
+                print("read 29")
+                detected(29)
+                count29=1
+            if(GPIO.input(29)==1 and count29==1):
+                count29=0
+            if(GPIO.input(31)==0 and count31==0):
+                print("read 29")
+                detected(31)
+                count31=1
+            if(GPIO.input(31)==1 and count31==1):
+                count31=0
+            if(GPIO.input(33)==0 and count33==0):
+                print("read 29")
+                detected(33)
+                count33=1
+            if(GPIO.input(33)==1 and count33==1):
+                count33=0
+            if(GPIO.input(35)==0 and count35==0):
+                print("read 29")
+                detected(35)
+                count35=1
+            if(GPIO.input(35)==1 and count35==1):
+                count35=0
             pass
-            time.sleep(.5)
+            time.sleep(.1)
     except KeyboardInterrupt:
         terminate()
         time.sleep(1)
