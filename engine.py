@@ -1,9 +1,15 @@
 import os
 import loop
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except:
+    pass
 import time
+import sys
 import threading
+import pygame
 
+pygame.init()
 
 channel=[1,2,3,4]
 
@@ -11,7 +17,7 @@ channel=[1,2,3,4]
 def stopall():
     print(len(setup.track))
     for x in range(len(setup.track)):
-        setup.track[x].terminate()
+        setup.track[x].stop()
 
 def terminate():
     print("terminating")
@@ -20,7 +26,21 @@ def terminate():
             setup.track[x].terminate()
             print("terminated",setup.track[x])
         except:
-            pass 
+            pass
+
+def timeout():
+    print("play has timed out")
+    try:
+        pincancel()
+    except:
+        pass
+    stopall()
+#    trackset()
+    try:
+        pinset()
+    except:
+        pass
+    print(threading.activeCount(),"alive")
             
 def playall():
     for x in range(len(setup.track)):
@@ -28,12 +48,20 @@ def playall():
         
 def detected(ballsack):
     print("sensor",ballsack," active")
+
+    #clock settings
+    
     try:
         detected.clock.cancel()
+        print("clock cancelled")
     except:
         pass
-    detected.clock=threading.Timer(30,timeout)
+    
+    detected.clock=threading.Timer(39,timeout)
     detected.clock.start()
+
+    #check track statuses and play
+    
     if setup.playcounter==len(channel):
         setup.playcounter=0
         setup.roundcounter+=1;
@@ -48,19 +76,16 @@ def detected(ballsack):
    
     if not setup.track[setup.playcounter].playing:
         current.replace(filename)
+        time.sleep(.1)
         current.play()
     else:
         current.replace(filename)
     
     setup.playcounter +=1
 
-def timeout():
-    print("play has timed out")
-    pincancel()
-    stopall()
-    trackset()
-    pinset()
-    print(threading.activeCount(),"alive")
+
+
+
 def trackset():
     setup.track=[]
     for x in range(len(channel)):
@@ -85,60 +110,81 @@ def pinset():
 #        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=500)
         print("sensor ",pinnum," initalized")
 
+def channelset(root):
+    channel[0]=[root+"one.wav",root+"five.wav",root+"nine.wav"]
+    print(channel[0])
+    channel[1]=[root+"two.wav",root+"six.wav",root+"ten.wav"]
+    channel[2]=[root+"three.wav",root+"seven.wav",root+"eleven.wav"]
+    channel[3]=[root+"four.wav",root+"eight.wav",root+"twelve.wav"]
+  
+
 
 def setup():
-    channel[0]=["/home/pi/minimalist-golf/one.wav","/home/pi/minimalist-golf/five.wav","/home/pi/minimalist-golf/nine.wav"]
-    channel[1]=["/home/pi/minimalist-golf/two.wav","/home/pi/minimalist-golf/six.wav","/home/pi/minimalist-golf/ten.wav"]
-    channel[2]=["/home/pi/minimalist-golf/three.wav","/home/pi/minimalist-golf/seven.wav","/home/pi/minimalist-golf/eleven.wav"]
-    channel[3]=["/home/pi/minimalist-golf/four.wav","/home/pi/minimalist-golf/eight.wav","/home/pi/minimalist-golf/twelve.wav"]
+    root="/home/pi/minimalist-golf"
     setup.track=[]
     setup.playcounter=0
     setup.roundcounter=0
     setup.numtracks=0
 
-    trackset()
-
+    try:
+        GPIO.setmode(GPIO.BOARD)
+        setup.senslist=[29,31,33,35]
+        print(setup.senslist)
+        print("pinmode established")
+    except:
+        print("no raspberry pi")
+        root=""
+        
+    channelset(root)
     print("playlist initialized")
-    GPIO.setmode(GPIO.BOARD)
-    setup.senslist=[29,31,33,35]
-    print(setup.senslist)
-    print("pinmode established")
+    trackset()
 
     sensor=[]
 
-    pinset()
+    try:
+        pinset()
+    except:
+        pass
     count29=0
     count31=0
     count33=0
     count35=0
     try:
         while True:
-            if(GPIO.input(29)==0 and count29==0):
-                print("read 29")
-                detected(29)
-                count29=1
-            if(GPIO.input(29)==1 and count29==1):
-                count29=0
-            if(GPIO.input(31)==0 and count31==0):
-                print("read 31")
-                detected(31)
-                count31=1
-            if(GPIO.input(31)==1 and count31==1):
-                count31=0
-            if(GPIO.input(33)==0 and count33==0):
-                print("read 33")
-                detected(33)
-                count33=1
-            if(GPIO.input(33)==1 and count33==1):
-                count33=0
-            if(GPIO.input(35)==0 and count35==0):
-                print("read 35")
-                detected(35)
-                count35=1
-            if(GPIO.input(35)==1 and count35==1):
-                count35=0
-            pass
-            time.sleep(.01)
+            try:
+                if(GPIO.input(29)==0 and count29==0):
+                    print("read 29")
+                    detected(29)
+                    count29=1
+                if(GPIO.input(29)==1 and count29==1):
+                    count29=0
+                if(GPIO.input(31)==0 and count31==0):
+                    print("read 31")
+                    detected(31)
+                    count31=1
+                if(GPIO.input(31)==1 and count31==1):
+                    count31=0
+                if(GPIO.input(33)==0 and count33==0):
+                    print("read 33")
+                    detected(33)
+                    count33=1
+                if(GPIO.input(33)==1 and count33==1):
+                    count33=0
+                if(GPIO.input(35)==0 and count35==0):
+                    print("read 35")
+                    detected(35)
+                    count35=1
+                if(GPIO.input(35)==1 and count35==1):
+                    count35=0
+            except:
+                pressed = pygame.key.get_pressed()
+                if pressed[pygame.K_w]:
+                    print("keyboard input received")
+                    detected("keyboard")
+                pygame.event.pump()
+                
+            time.sleep(.1)
+            
     except KeyboardInterrupt:
         terminate()
         time.sleep(1)

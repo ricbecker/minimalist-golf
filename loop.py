@@ -79,7 +79,7 @@ class Looper(threading.Thread) :
 
 
   def stop(self) :
-    self.playing = False
+      self.playing = False
 
   def terminate(self) :
     self.loop=False
