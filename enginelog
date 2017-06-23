@@ -1,0 +1,60 @@
+2017-06-23 19:30:44.180125: NoPi Mode Established
+2017-06-23 19:30:44.239387: playlist initialized
+2017-06-23 19:30:53.040320: NoPi Mode Established
+2017-06-23 19:30:53.101747: playlist initialized
+2017-06-23 19:30:55.833777: sensor keyboard active
+2017-06-23 19:30:56.029082: program advanced
+2017-06-23 19:30:57.306714: sensor keyboard active
+2017-06-23 19:30:57.459121: program advanced
+2017-06-23 19:30:58.485437: play has timed out
+2017-06-23 19:30:59.954547: sensor keyboard active
+2017-06-23 19:31:00.121417: program advanced
+2017-06-23 19:31:00.693100: sensor keyboard active
+2017-06-23 19:31:00.868943: program advanced
+2017-06-23 19:31:01.404346: sensor keyboard active
+2017-06-23 19:31:01.600804: program advanced
+2017-06-23 19:31:01.676543: sensor keyboard active
+2017-06-23 19:31:01.856710: program advanced
+2017-06-23 19:31:02.025404: sensor keyboard active
+2017-06-23 19:31:02.116408: program advanced
+2017-06-23 19:31:02.234395: sensor keyboard active
+2017-06-23 19:31:02.360561: program advanced
+2017-06-23 19:31:02.425159: sensor keyboard active
+2017-06-23 19:31:02.488931: program advanced
+2017-06-23 19:31:02.620641: sensor keyboard active
+2017-06-23 19:31:02.723583: program advanced
+2017-06-23 19:31:05.042873: play has timed out
+2017-06-23 19:31:10.942038: Quit by user
+2017-06-23 19:31:39.170921: NoPi Mode Established
+2017-06-23 19:31:39.228111: playlist initialized
+2017-06-23 19:31:41.118628: sensor keyboard active
+2017-06-23 19:31:41.272659: program advanced
+2017-06-23 19:31:41.785674: sensor keyboard active
+2017-06-23 19:31:41.937529: program advanced
+2017-06-23 19:31:42.572990: sensor keyboard active
+2017-06-23 19:31:42.735512: program advanced
+2017-06-23 19:31:43.222610: sensor keyboard active
+2017-06-23 19:31:43.384660: program advanced
+2017-06-23 19:31:44.583982: sensor keyboard active
+ERROR:root:oops
+Traceback (most recent call last):
+  File "/Users/ricbecker/Documents/minimalist-golf/engine.py", line 169, in setup
+    if(GPIO.input(29)==0 and count29==0):
+NameError: name 'GPIO' is not defined
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ricbecker/Documents/minimalist-golf/engine.py", line 226, in <module>
+    setup()
+  File "/Users/ricbecker/Documents/minimalist-golf/engine.py", line 198, in setup
+    detected("keyboard")
+  File "/Users/ricbecker/Documents/minimalist-golf/engine.py", line 82, in detected
+    current.replace(filename)
+  File "/Users/ricbecker/Documents/minimalist-golf/loop.py", line 88, in replace
+    self.wf = wave.open(filename, 'rb')
+  File "/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/wave.py", line 499, in open
+    return Wave_read(f)
+  File "/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/wave.py", line 159, in __init__
+    f = builtins.open(f, 'rb')
+FileNotFoundError: [Errno 2] No such file or directory: '5ive.wav'
