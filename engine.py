@@ -16,7 +16,7 @@ from datetime import datetime as thetime
 import logging
 
 logging.basicConfig(level=logging.DEBUG, filename='enginelog')
-
+pygame.init()
 channel=[1,2,3,4]
 _log=""
 clock=False
@@ -86,7 +86,6 @@ def detected(sensor):
    
     if not setup.track[setup.playcounter].playing:
         current.replace(filename)
-        time.sleep(.1)
         current.play()
     else:
         current.replace(filename)
