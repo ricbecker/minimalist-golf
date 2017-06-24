@@ -87,3 +87,6 @@ class Looper(threading.Thread) :
   def replace(self,filename):
     self.wf = wave.open(filename, 'rb')
 
+  def rewind()
+    self.wf.rewind()
+
