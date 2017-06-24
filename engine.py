@@ -2,7 +2,7 @@ import os
 import loop
 try:
     import RPi.GPIO as GPIO
-    root="/home/pi/minimalist-golf"
+    root="/home/pi/minimalist-golf/"
     pimode=True
 except:
     pimode=False
@@ -15,7 +15,6 @@ import pygame
 from datetime import datetime as thetime
 import logging
 
-pygame.init()
 logging.basicConfig(level=logging.DEBUG, filename='enginelog')
 
 channel=[1,2,3,4]
@@ -68,9 +67,9 @@ def detected(sensor):
     except:
         pass
     
-    log("Sensor "+sensor+" active")
+    log("Sensor "+str(sensor)+" active")
     
-    clock=threading.Timer(30,timeout)
+    clock=threading.Timer(3,timeout)
     clock.start()
 
     #check track statuses and play
@@ -117,12 +116,12 @@ def pincancel():
 
 
 def pinset():
-
+    log("running pinset")
     for x in range(len(setup.senslist)):
         pinnum=setup.senslist[x]
         GPIO.setup(pinnum,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=500)
-        log("sensor ",pinnum," initalized")
+        log("sensor "+str(pinnum)+" initalized")
 
 def channelset():
     global root
@@ -199,7 +198,6 @@ def setup():
     trackset()
 
     sensor=[]
-
     try:
         pinset()
     except:
@@ -210,7 +208,7 @@ def setup():
     count35=0
     try:
         while True:
-            try:
+            if(pimode==True):
                 if(GPIO.input(29)==0 and count29==0):
                     log("read 29")
                     detected(29)
@@ -235,11 +233,11 @@ def setup():
                     count35=1
                 if(GPIO.input(35)==1 and count35==1):
                     count35=0
-        
-            except:
+
+            try:
+                pygame.init()
                 pressed = pygame.key.get_pressed()
                 if pressed[pygame.K_w]:
-                    ("keyboard input received")
                     detected("keyboard")
                 if pressed[pygame.K_q]:
                     try:
@@ -249,7 +247,8 @@ def setup():
                     if clock:
                         timeout()
                 pygame.event.pump()
-                
+            except:
+                pass    
             time.sleep(.01)
             
     except KeyboardInterrupt:
