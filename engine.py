@@ -2,8 +2,12 @@ import os
 import loop
 try:
     import RPi.GPIO as GPIO
+    root="/home/pi/minimalist-golf"
+    pimode=True
 except:
-    pass
+    pimode=False
+    root=""
+        
 import time
 import sys
 import threading
@@ -16,23 +20,23 @@ logging.basicConfig(level=logging.DEBUG, filename='enginelog')
 
 channel=[1,2,3,4]
 _log=""
-root="/home/pi/minimalist-golf"
+clock=False
+
 
 def stopall():
-    print(len(setup.track))
     for x in range(len(setup.track)):
         setup.track[x].stop()
 
 def terminate():
-    print("terminating")
     for x in range(len(setup.track)):
         try:
             setup.track[x].terminate()
-            print("terminated",setup.track[x])
         except:
             pass
 
 def timeout():
+    global clock
+    clock=False
     log("play has timed out")
     try:
         pincancel()
@@ -49,18 +53,25 @@ def playall():
     for x in range(len(setup.track)):
         setup.track[x].play()
         
-def detected(ballsack):
-    log("sensor "+ballsack+" active")
+def detected(sensor):
+    global clock
+    
+
 
     #clock settings
-    
+
+    if clock==False:
+        log("newclock")
+        
     try:
-        detected.clock.cancel()
+        clock.cancel()
     except:
         pass
     
-    detected.clock=threading.Timer(39,timeout)
-    detected.clock.start()
+    log("Sensor "+sensor+" active")
+    
+    clock=threading.Timer(30,timeout)
+    clock.start()
 
     #check track statuses and play
     
@@ -83,7 +94,8 @@ def detected(ballsack):
     
     setup.playcounter +=1
 
-    log("program advanced")
+    log("Program advanced")
+    time.sleep(1)
 
 
 
@@ -122,7 +134,41 @@ def channelset():
 def log(entry):
       global _log
       global root
-      appender=str(thetime.now())+": "+entry+"\n"
+      appender=""
+      if(entry=="newclock"):
+         appender="""\n
+           ||############## NEW CLOCK ##################||\n
+           ||###########################################||\n
+                     \n"""
+      if(entry=="newprogram"):
+         appender="""\n\n\n\n
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+
+\n
+\n
+           ||@@@@@@@@@@@@@ NEW PROGRAM @@@@@@@@@@@@@@@@@||\n
+           ||@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@||\n
+\n
+\n"""
+      appender+=str(thetime.now())+": "+entry+"\n"
       print(appender)
       f=open(root+"enginelog", "a+")
       f.write(appender)
@@ -131,15 +177,14 @@ def log(entry):
 
 def setup():
     global root
+    global clock
 
     try:
         GPIO.setmode(GPIO.BOARD)
         setup.senslist=[29,31,33,35]
-        print(setup.senslist)
-        log("Pin Mode established")
     except:
-        root=""
-        log("NoPi Mode Established")
+        pass
+        
 
     
     setup.track=[]
@@ -190,18 +235,19 @@ def setup():
                     count35=1
                 if(GPIO.input(35)==1 and count35==1):
                     count35=0
+        
             except:
-                
                 pressed = pygame.key.get_pressed()
                 if pressed[pygame.K_w]:
                     ("keyboard input received")
                     detected("keyboard")
                 if pressed[pygame.K_q]:
-                    timeout()
                     try:
-                        detected.clock.cancel()
+                        clock.cancel()
                     except:
                         pass
+                    if clock:
+                        timeout()
                 pygame.event.pump()
                 
             time.sleep(.01)
@@ -210,7 +256,6 @@ def setup():
         terminate()
         time.sleep(1)
         log("Quit by user")
-        print(_log)
         try:
             GPIO.cleanup()
         except:
@@ -222,6 +267,12 @@ def setup():
 
 
 if __name__ == '__main__':
+    log("newprogram")
+    if pimode:
+        log("Pi Mode Engaged")
+    else:
+        log("NoPi Mode Engaged")
+        
     try:
         setup()
     except:
