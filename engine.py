@@ -20,7 +20,7 @@ pygame.init()
 channel=[1,2,3,4]
 _log=""
 clock=False
-
+lclock=False
 
 def stopall():
     for x in range(len(setup.track)):
@@ -41,8 +41,8 @@ def timeout():
         pincancel()
     except:
         pass
-    stopall()
-#    trackset()
+    terminate()
+    trackset()
     try:
         pinset()
     except:
@@ -69,7 +69,7 @@ def detected(sensor):
     
     log("Sensor "+str(sensor)+" active")
     
-    clock=threading.Timer(3,timeout)
+    clock=threading.Timer(30,timeout)
     clock.start()
 
     #check track statuses and play
@@ -86,6 +86,7 @@ def detected(sensor):
    
     if not setup.track[setup.playcounter].playing:
         current.replace(filename)
+        time.sleep(.01)
         current.play()
     else:
         current.replace(filename)
@@ -172,10 +173,22 @@ def log(entry):
       f.write(appender)
       f.close()
       
+def blip():
+    log("blip")
+    pclock=threading.Timer(1200,blip)
+    pclock.start()
+
 
 def setup():
     global root
     global clock
+    global pclock
+
+    lclock=threading.Timer(1200,blip)
+    lclock.start()
+
+ 
+
 
     try:
         GPIO.setmode(GPIO.BOARD)
