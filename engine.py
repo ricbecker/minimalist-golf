@@ -1,39 +1,79 @@
 import os
 import loop
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+    root="/home/pi/minimalist-golf/"
+    pimode=True
+except:
+    pimode=False
+    root=""
+        
 import time
+import sys
 import threading
+import pygame
+from datetime import datetime as thetime
+import logging
 
-
+logging.basicConfig(level=logging.DEBUG, filename='enginelog')
+pygame.init()
 channel=[1,2,3,4]
-
+_log=""
+clock=False
+lclock=False
 
 def stopall():
-    print(len(setup.track))
     for x in range(len(setup.track)):
-        setup.track[x].terminate()
+        setup.track[x].stop()
 
 def terminate():
-    print("terminating")
     for x in range(len(setup.track)):
         try:
             setup.track[x].terminate()
-            print("terminated",setup.track[x])
         except:
-            pass 
+            pass
+
+def timeout():
+    global clock
+    clock=False
+    log("play has timed out")
+    try:
+        pincancel()
+    except:
+        pass
+    terminate()
+    trackset()
+    try:
+        pinset()
+    except:
+        pass
             
 def playall():
     for x in range(len(setup.track)):
         setup.track[x].play()
         
-def detected(ballsack):
-    print("sensor",ballsack," active")
+def detected(sensor):
+    global clock
+    
+
+
+    #clock settings
+
+    if clock==False:
+        log("newclock")
+        
     try:
-        detected.clock.cancel()
+        clock.cancel()
     except:
         pass
-    detected.clock=threading.Timer(30,timeout)
-    detected.clock.start()
+    
+    log("Sensor "+str(sensor)+" active")
+    
+    clock=threading.Timer(30,timeout)
+    clock.start()
+
+    #check track statuses and play
+    
     if setup.playcounter==len(channel):
         setup.playcounter=0
         setup.roundcounter+=1;
@@ -42,25 +82,23 @@ def detected(ballsack):
         setup.roundcounter=0
 
     current=setup.track[setup.playcounter]
-    print(current)
     filename=channel[setup.playcounter][setup.roundcounter]
-    print(filename)
    
     if not setup.track[setup.playcounter].playing:
         current.replace(filename)
+        time.sleep(.01)
         current.play()
     else:
         current.replace(filename)
     
     setup.playcounter +=1
 
-def timeout():
-    print("play has timed out")
-    pincancel()
-    stopall()
-    trackset()
-    pinset()
-    print(threading.activeCount(),"alive")
+    log("Program advanced")
+    time.sleep(1)
+
+
+
+
 def trackset():
     setup.track=[]
     for x in range(len(channel)):
@@ -74,82 +112,186 @@ def pincancel():
     for x in range(len(setup.senslist)):
         pinnum=setup.senslist[x]
         GPIO.remove_event_detect(pinnum)
-        print("sensor ",pinnum," cancelled")
+        log("sensor ",pinnum," cancelled")
 
 
 def pinset():
-
+    log("running pinset")
     for x in range(len(setup.senslist)):
         pinnum=setup.senslist[x]
         GPIO.setup(pinnum,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #        GPIO.add_event_detect(pinnum, GPIO.RISING, callback=detected, bouncetime=500)
-        print("sensor ",pinnum," initalized")
+        log("sensor "+str(pinnum)+" initalized")
+
+def channelset():
+    global root
+    channel[0]=[root+"one.wav",root+"five.wav",root+"nine.wav"]
+    channel[1]=[root+"two.wav",root+"six.wav",root+"ten.wav"]
+    channel[2]=[root+"three.wav",root+"seven.wav",root+"eleven.wav"]
+    channel[3]=[root+"four.wav",root+"eight.wav",root+"twelve.wav"]
+  
+def log(entry):
+      global _log
+      global root
+      appender=""
+      if(entry=="newclock"):
+         appender="""\n
+           ||############## NEW CLOCK ##################||\n
+           ||###########################################||\n
+                     \n"""
+      if(entry=="newprogram"):
+         appender="""\n\n\n\n
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+      %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+    %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%  %%
+
+\n
+\n
+           ||@@@@@@@@@@@@@ NEW PROGRAM @@@@@@@@@@@@@@@@@||\n
+           ||@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@||\n
+\n
+\n"""
+      appender+=str(thetime.now())+": "+entry+"\n"
+      print(appender)
+      f=open(root+"enginelog", "a+")
+      f.write(appender)
+      f.close()
+      
+def blip():
+    log("blip")
+    pclock=threading.Timer(1200,blip)
+    pclock.start()
 
 
 def setup():
-    channel[0]=["/home/pi/minimalist-golf/one.wav","/home/pi/minimalist-golf/five.wav","/home/pi/minimalist-golf/nine.wav"]
-    channel[1]=["/home/pi/minimalist-golf/two.wav","/home/pi/minimalist-golf/six.wav","/home/pi/minimalist-golf/ten.wav"]
-    channel[2]=["/home/pi/minimalist-golf/three.wav","/home/pi/minimalist-golf/seven.wav","/home/pi/minimalist-golf/eleven.wav"]
-    channel[3]=["/home/pi/minimalist-golf/four.wav","/home/pi/minimalist-golf/eight.wav","/home/pi/minimalist-golf/twelve.wav"]
+    global root
+    global clock
+    global pclock
+
+    lclock=threading.Timer(1200,blip)
+    lclock.start()
+
+ 
+
+
+    try:
+        GPIO.setmode(GPIO.BOARD)
+        setup.senslist=[29,31,33,35]
+    except:
+        pass
+        
+
+    
     setup.track=[]
     setup.playcounter=0
     setup.roundcounter=0
     setup.numtracks=0
 
+
+        
+    channelset()
+    log("playlist initialized")
     trackset()
 
-    print("playlist initialized")
-    GPIO.setmode(GPIO.BOARD)
-    setup.senslist=[29,31,33,35]
-    print(setup.senslist)
-    print("pinmode established")
-
     sensor=[]
-
-    pinset()
+    try:
+        pinset()
+    except:
+        pass
     count29=0
     count31=0
     count33=0
     count35=0
     try:
         while True:
-            if(GPIO.input(29)==0 and count29==0):
-                print("read 29")
-                detected(29)
-                count29=1
-            if(GPIO.input(29)==1 and count29==1):
-                count29=0
-            if(GPIO.input(31)==0 and count31==0):
-                print("read 31")
-                detected(31)
-                count31=1
-            if(GPIO.input(31)==1 and count31==1):
-                count31=0
-            if(GPIO.input(33)==0 and count33==0):
-                print("read 33")
-                detected(33)
-                count33=1
-            if(GPIO.input(33)==1 and count33==1):
-                count33=0
-            if(GPIO.input(35)==0 and count35==0):
-                print("read 35")
-                detected(35)
-                count35=1
-            if(GPIO.input(35)==1 and count35==1):
-                count35=0
-            pass
+            if(pimode==True):
+                if(GPIO.input(29)==0 and count29==0):
+                    log("read 29")
+                    detected(29)
+                    count29=1
+                if(GPIO.input(29)==1 and count29==1):
+                    count29=0
+                if(GPIO.input(31)==0 and count31==0):
+                    log("read 31")
+                    detected(31)
+                    count31=1
+                if(GPIO.input(31)==1 and count31==1):
+                    count31=0
+                if(GPIO.input(33)==0 and count33==0):
+                    log("read 33")
+                    detected(33)
+                    count33=1
+                if(GPIO.input(33)==1 and count33==1):
+                    count33=0
+                if(GPIO.input(35)==0 and count35==0):
+                    log("read 35")
+                    detected(35)
+                    count35=1
+                if(GPIO.input(35)==1 and count35==1):
+                    count35=0
+
+            try:
+                pygame.init()
+                pressed = pygame.key.get_pressed()
+                if pressed[pygame.K_w]:
+                    detected("keyboard")
+                if pressed[pygame.K_q]:
+                    try:
+                        clock.cancel()
+                    except:
+                        pass
+                    if clock:
+                        timeout()
+                pygame.event.pump()
+            except:
+                pass    
             time.sleep(.01)
+            
     except KeyboardInterrupt:
         terminate()
         time.sleep(1)
-        print ("Quit")
-        GPIO.cleanup()
+        log("Quit by user")
+        try:
+            GPIO.cleanup()
+        except:
+            pass
         os._exit(0)
+
+
         
 
 
 if __name__ == '__main__':
-    setup()
+    log("newprogram")
+    if pimode:
+        log("Pi Mode Engaged")
+    else:
+        log("NoPi Mode Engaged")
+        
+    try:
+        setup()
+    except:
+        logging.exception("oops")
+        
+
+        
+
     
 
 

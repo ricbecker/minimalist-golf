@@ -79,11 +79,14 @@ class Looper(threading.Thread) :
 
 
   def stop(self) :
-    self.playing = False
+      self.playing = False
 
   def terminate(self) :
     self.loop=False
 
   def replace(self,filename):
     self.wf = wave.open(filename, 'rb')
+
+  def rewinder(self):
+    self.wf.rewind()
 
